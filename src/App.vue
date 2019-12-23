@@ -1,19 +1,54 @@
 <template>
   <div id="app">
-    <div id="nav">
-      <router-link to="/">Home</router-link> |
-      <router-link to="/about">About</router-link>
-    </div>
     <router-view />
   </div>
 </template>
+<script>
+import { mapMutations } from "vuex";
 
+export default {
+  beforeMount() {
+    if (localStorage.getItem("hotels")) {
+      this.updateHotels(JSON.parse(localStorage.getItem("hotels")));
+    } else {
+      this.fetchHotels();
+    }
+  },
+  methods: {
+    ...mapMutations(["updateHotels"]),
+    fetchHotels() {
+      fetch("/hotels.json")
+        .then(response => {
+          if (!response.ok) {
+            throw new Error("HTTP error " + response.status);
+          }
+          return response.json();
+        })
+        .then(json => {
+          localStorage.setItem("hotels", JSON.stringify(json));
+          this.updateHotels(json);
+        })
+        .catch(function() {
+          this.dataError = true;
+        });
+    }
+  }
+};
+</script>
 <style lang="scss">
+body {
+  padding: 0;
+  margin: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
 #app {
   font-family: "Avenir", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
 }
 
